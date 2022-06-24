@@ -1,17 +1,14 @@
 import java.text.Normalizer;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Main {
-    private static int nextId = 1;
-
     private static final String PEQUENO = "pequeno";
     private static final String MEDIO = "medio";
     private static final String AVANCADO = "avancado";
 
     private static final Scanner scanner = new Scanner(System.in);
-    private static final Map<String, List<Map<String, Object>>> table = new HashMap<>();
+    private static final Map<String, List<Participant>> table = new HashMap<>();
 
     static {
         table.put(PEQUENO, new ArrayList<>());
@@ -53,21 +50,14 @@ public class Main {
         var category = readCategory();
         var participant = readParticipant();
 
-        var stream = Stream.concat(table.get(PEQUENO).stream(), table.get(MEDIO).stream());
-        var all = Stream.concat(stream, table.get(AVANCADO).stream()).collect(Collectors.toList());
+        var all = Stream.concat(table.get(PEQUENO).stream(), table.get(MEDIO).stream());
+        all = Stream.concat(all, table.get(AVANCADO).stream());
+        var found = all.filter(x -> x.getRg().equals(participant.getRg())).findFirst();
 
-        var found = all
-                .stream()
-                .filter(x -> x.get("rg").equals(participant.get("rg")))
-                .findFirst();
-
-        if (found.isEmpty()) {
-            participant.put("id", nextId++);
+        if (found.isEmpty())
             table.get(category).add(participant);
-        }
-        else {
+        else
             throw new Exception("Usuário já cadastrado");
-        }
     }
 
     private static void listParticipants() throws Exception {
@@ -77,14 +67,14 @@ public class Main {
         System.out.printf("Categoria %s\n\n", category);
 
         for (var p : list) {
-            System.out.printf("ID: %d\n", (int) p.get("id"));
-            System.out.printf("Nome: %s\n", p.get("firstName"));
-            System.out.printf("Sobrenome: %s\n", p.get("lastName"));
-            System.out.printf("Idade: %d\n", (int) p.get("age"));
-            System.out.printf("RG: %s\n", p.get("rg"));
-            System.out.printf("Telefone: %s\n", p.get("phone"));
-            System.out.printf("Telefone de emergência: %s\n", p.get("emergencyPhone"));
-            System.out.printf("Grupo sanguíneo: %s\n", p.get("bloodGroup"));
+            System.out.printf("ID: %d\n", p.getId());
+            System.out.printf("Nome: %s\n", p.getFirstName());
+            System.out.printf("Sobrenome: %s\n", p.getLastName());
+            System.out.printf("Idade: %d\n", p.getAge());
+            System.out.printf("RG: %s\n", p.getRg());
+            System.out.printf("Telefone: %s\n", p.getPhone());
+            System.out.printf("Telefone de emergência: %s\n", p.getEmergencyPhone());
+            System.out.printf("Grupo sanguíneo: %s\n", p.getBloodGroup());
             System.out.println();
         }
     }
@@ -97,7 +87,7 @@ public class Main {
 
         var found = table.get(category)
                 .stream()
-                .filter(x -> (int) x.get("id") == id)
+                .filter(x -> x.getId() == id)
                 .findFirst();
 
         if (found.isEmpty()) {
@@ -128,29 +118,29 @@ public class Main {
         return category;
     }
 
-    private static HashMap<String, Object> readParticipant() {
-        var participant = new HashMap<String, Object>();
+    private static Participant readParticipant() {
+        var participant = new Participant();
 
         System.out.print("Digite o nome: ");
-        participant.put("firstName", scanner.nextLine());
+        participant.setFirstName(scanner.nextLine());
 
         System.out.print("Digite o sobrenome: ");
-        participant.put("lastName", scanner.nextLine());
+        participant.setLastName(scanner.nextLine());
 
         System.out.print("Digite o RG: ");
-        participant.put("rg", scanner.nextLine());
+        participant.setRg(scanner.nextLine());
 
         System.out.print("Digite a idade: ");
-        participant.put("age", Integer.parseInt(scanner.nextLine()));
+        participant.setAge(Integer.parseInt(scanner.nextLine()));
 
         System.out.print("Digite o número de celular: ");
-        participant.put("phone", scanner.nextLine());
+        participant.setPhone(scanner.nextLine());
 
         System.out.print("Digite o número de emergência: ");
-        participant.put("emergencyPhone", scanner.nextLine());
+        participant.setEmergencyPhone(scanner.nextLine());
 
         System.out.print("Digite o grupo sanguíneo: ");
-        participant.put("bloodGroup", scanner.nextLine());
+        participant.setBloodGroup(scanner.nextLine());
 
         return participant;
     }
